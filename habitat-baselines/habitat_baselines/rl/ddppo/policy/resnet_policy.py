@@ -355,6 +355,7 @@ class PointNavResNetNet(Net):
             self.proximity_embedding = nn.Linear(input_proximity_dim, 32)
             rnn_input_size += 32
 
+
         if EpisodicCompassSensor.cls_uuid in observation_space.spaces:
             assert (
                 observation_space.spaces[EpisodicCompassSensor.cls_uuid].shape[
@@ -365,6 +366,9 @@ class PointNavResNetNet(Net):
             input_compass_dim = 2  # cos and sin of the angle
             self.compass_embedding = nn.Linear(input_compass_dim, 32)
             rnn_input_size += 32
+
+        if 'goal_prompt_embedding' in observation_space.spaces:
+            rnn_input_size += 1024
 
         for uuid in [
             ImageGoalSensor.cls_uuid,
@@ -538,6 +542,9 @@ class PointNavResNetNet(Net):
         if ObjectGoalSensor.cls_uuid in observations:
             object_goal = observations[ObjectGoalSensor.cls_uuid].long()
             x.append(self.obj_categories_embedding(object_goal).squeeze(dim=1))
+
+        if 'goal_prompt_embedding' in observations:
+            x.append(observations['goal_prompt_embedding'].squeeze(dim=1))
 
         if EpisodicCompassSensor.cls_uuid in observations:
             compass_observations = torch.stack(
