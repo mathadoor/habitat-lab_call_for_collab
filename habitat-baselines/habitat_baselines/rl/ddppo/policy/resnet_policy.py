@@ -370,6 +370,9 @@ class PointNavResNetNet(Net):
         if 'goal_prompt_embedding' in observation_space.spaces:
             rnn_input_size += 1024
 
+        if 'caption_goal_embedding' in observation_space.spaces:
+            rnn_input_size += 1024
+            
         for uuid in [
             ImageGoalSensor.cls_uuid,
             InstanceImageGoalSensor.cls_uuid,
@@ -542,10 +545,16 @@ class PointNavResNetNet(Net):
         if ObjectGoalSensor.cls_uuid in observations:
             object_goal = observations[ObjectGoalSensor.cls_uuid].long()
             x.append(self.obj_categories_embedding(object_goal).squeeze(dim=1))
-
+            
+        # Goal Prompt Embedding Sensor
         if 'goal_prompt_embedding' in observations:
             x.append(observations['goal_prompt_embedding'].squeeze(dim=1))
-
+        
+        # Caption Goal Embedding
+        if 'caption_goal_embedding' in observations:
+            caption_embedding = observations['caption_goal_embedding']
+            x.append(caption_embedding)
+            
         if EpisodicCompassSensor.cls_uuid in observations:
             compass_observations = torch.stack(
                 [
